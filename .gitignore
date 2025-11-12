@@ -1,0 +1,13 @@
+
+# ide
+.vscode
+.idea
+
+# Python cache #
+**/__pycache__
+
+# Other #
+**.pyc
+.venv
+dist
+src/typedb_graph_visualizer.egg-info
