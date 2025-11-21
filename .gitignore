@@ -9,5 +9,6 @@
 # Other #
 **.pyc
 **.egg-info
+.ipynb_checkpoints
 .venv
 dist
