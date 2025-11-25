@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "typedb-graph-visualizer-example"
+name = "typedb-graph-visualizer"
 version = "0.0.1"
 description = "TypeDB graph visualization example"
 readme = "README.md"
