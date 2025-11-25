@@ -1,7 +1,7 @@
 
 from typedb.driver import TransactionType, Credentials, DriverOptions, TypeDB, QueryOptions
-from src.typedb_graphs_python.networkx_builder import NetworkXBuilder
-from src.typedb_graphs_python.matplotlib_visualizer import MatplotlibVisualizer
+from src.typedb_graph_visualizer.networkx_builder import NetworkXBuilder
+from src.typedb_graph_visualizer.matplotlib_visualizer import MatplotlibVisualizer
 
 DB_ADDRESS = "127.0.0.1:1729"
 DB_CREDENTIALS = Credentials("admin", "password")
