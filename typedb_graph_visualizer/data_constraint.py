@@ -34,7 +34,7 @@ class NamedRoleVertex(DataVertex):
         self._variable = variable
 
     def name(self):
-        self.name
+        return self._name
 
     def __hash__(self):
         return hash(self._variable)
@@ -87,7 +87,7 @@ class ExpressionVertex(DataVertex):
         return f"Expr({self.assigned} = {self.text}[{self.arguments}])"
 
 
-def resolve_constraint_vertex(pipeline: Pipeline, vertex: ConstraintVertex, concept_row: ConceptRow) -> DataVertex:
+def resolve_constraint_vertex(pipeline: Pipeline, vertex: ConstraintVertex, concept_row: ConceptRow) -> Optional[DataVertex]:
     if vertex.is_label():
         return ConceptVertex(vertex.as_label())
     elif vertex.is_variable():
@@ -96,9 +96,9 @@ def resolve_constraint_vertex(pipeline: Pipeline, vertex: ConstraintVertex, conc
     elif vertex.is_value():
         return ConceptVertex(vertex.as_value())
     elif vertex.is_named_role():
-        NamedRoleVertex(vertex.as_named_role_get_variable(), vertex.as_named_role_get_name())
+        return NamedRoleVertex(vertex.as_named_role_get_variable(), vertex.as_named_role_get_name())
     else:
-        None
+        return None
 
 
 class DataConstraint(ABC):
