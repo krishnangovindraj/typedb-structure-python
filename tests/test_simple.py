@@ -1,4 +1,3 @@
-
 from typedb.driver import TransactionType, Credentials, DriverOptions, TypeDB, QueryOptions
 from typedb_graph_visualizer.networkx_builder import NetworkXBuilder
 from typedb_graph_visualizer.matplotlib_visualizer import MatplotlibVisualizer
@@ -9,6 +8,7 @@ DRIVER_OPTIONS = DriverOptions(is_tls_enabled=False)
 QUERY_OPTIONS = QueryOptions()
 QUERY_OPTIONS.include_query_structure = True
 DB_NAME = "typedb-graph-tutorial-py"
+
 
 def setup(driver, schema, data):
     if next(db for db in driver.databases.all() if db.name == DB_NAME):
@@ -21,16 +21,19 @@ def setup(driver, schema, data):
         rows = list(tx.query(data).resolve())
         assert 1 == len(rows)
         tx.commit()
-  
+
+
 def run_query(driver, query):
-  with driver.transaction(DB_NAME, TransactionType.READ) as tx:
+    with driver.transaction(DB_NAME, TransactionType.READ) as tx:
         answers = list(tx.query(query, QUERY_OPTIONS).resolve())
-  return answers
+    return answers
+
 
 def build_graph_for_answers(answers, builder):
     for (i, answer) in enumerate(answers):
         builder.add_answer(i, answer)
     return builder.finish()
+
 
 def test_friendships():
     SCHEMA = """
@@ -67,6 +70,7 @@ def test_friendships():
     assert 9 == len(graph.edges), "nx edge count mismatch"
     return graph
 
+
 def test_expression_disjunction():
     QUERY = """
     match 
@@ -78,14 +82,35 @@ def test_expression_disjunction():
     assert 4 == len(answers), "TypeDB answer count mismatch"
     assert answers[0].query_structure() is not None, "TypeDB no query structure"
     graph = build_graph_for_answers(answers, NetworkXBuilder(answers[0].query_structure()))
-    assert 9 == len(graph.nodes), "nx node count mismatch" # Concept 5 is shared
+    assert 11 == len(
+        graph.nodes), "nx node count mismatch"  # 2 + 4 expr nodes,  4 values for x + 2 values for y  - The value 5 is shared
     assert 10 == len(graph.edges), "nx edge count mismatch"
     return graph
 
 
-if __name__ == "__main__":
-    friendships = test_friendships()
-    MatplotlibVisualizer.draw(friendships)
+def run_readme_example():
+    # Must manually ensure they're in sync
+    from typedb.driver import TransactionType, Credentials, DriverOptions, TypeDB, QueryOptions
+    from typedb_graph_visualizer import NetworkXBuilder, MatplotlibVisualizer
 
-    expression_disjunciton = test_expression_disjunction()
-    MatplotlibVisualizer.draw(expression_disjunciton)
+    driver = TypeDB.driver("127.0.0.1:1729", Credentials("admin", "password"), DriverOptions(is_tls_enabled=False))
+    DB_NAME = "typedb_graph_visualizer_readme"
+    if DB_NAME in [db.name for db in driver.databases.all()]:
+        driver.databases.get(DB_NAME).delete()
+    driver.databases.create(DB_NAME)
+    with driver.transaction(DB_NAME, TransactionType.READ) as tx:
+        answers = list(tx.query("match let $x = 1;", QueryOptions(include_query_structure=True)).resolve())
+
+    builder = NetworkXBuilder(answers[0].query_structure())
+    for (i, answer) in enumerate(answers):
+        builder.add_answer(i, answer)
+    graph = builder.finish()
+    MatplotlibVisualizer.draw(graph)
+
+
+if __name__ == "__main__":
+    MatplotlibVisualizer.draw(test_friendships())
+
+    MatplotlibVisualizer.draw(test_expression_disjunction())
+
+    run_readme_example()

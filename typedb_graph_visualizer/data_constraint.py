@@ -19,6 +19,10 @@ class ConceptVertex(DataVertex):
         return hash(self.concept)
 
     def __eq__(self, other):
+        if other is self:
+            return True
+        if other is None or not isinstance(other, self.__class__):
+            return False
         return self.concept == other.concept
 
     def __ne__(self, other):
@@ -40,6 +44,10 @@ class NamedRoleVertex(DataVertex):
         return hash(self._variable)
 
     def __eq__(self, other):
+        if other is self:
+            return True
+        if other is None or not isinstance(other, self.__class__):
+            return False
         return self._variable == other._variable
 
     def __ne__(self, other):
@@ -52,13 +60,17 @@ class NamedRoleVertex(DataVertex):
 class FunctionCallVertex(DataVertex):
     def __init__(self, name: str, assigned: List[Concept], arguments: List[Concept]):
         self.name = name
-        self.assigned = assigned
-        self.arguments = arguments
+        self.assigned = tuple(assigned)
+        self.arguments = tuple(arguments)
 
     def __hash__(self):
         return hash((self.name, self.assigned, self.arguments))
 
     def __eq__(self, other):
+        if other is self:
+            return True
+        if other is None or not isinstance(other, self.__class__):
+            return False
         return (self.name, self.assigned, self.arguments) == (other.name, other.assigned, other.arguments)
 
     def __ne__(self, other):
@@ -71,20 +83,25 @@ class FunctionCallVertex(DataVertex):
 class ExpressionVertex(DataVertex):
     def __init__(self, text: str, assigned: Concept, arguments: List[Concept]):
         self.text = text
-        self.arguments = arguments
+        self.arguments = tuple(arguments)
         self.assigned = assigned
 
     def __hash__(self):
         return hash((self.text, self.assigned, self.arguments))
 
     def __eq__(self, other):
+        if other is self:
+            return True
+        if other is None or not isinstance(other, self.__class__):
+            return False
         return (self.text, self.assigned, self.arguments) == (other.text, other.assigned, other.arguments)
 
     def __ne__(self, other):
         return not (self == other)
 
     def __repr__(self):
-        return f"Expr({self.assigned} = {self.text}[{self.arguments}])"
+        return f"Expr({self.text})"
+        # return f"Expr({self.text}, {self.assigned}, [{self.arguments}])"
 
 
 def resolve_constraint_vertex(pipeline: Pipeline, vertex: ConstraintVertex, concept_row: ConceptRow) -> Optional[DataVertex]:
@@ -96,7 +113,7 @@ def resolve_constraint_vertex(pipeline: Pipeline, vertex: ConstraintVertex, conc
     elif vertex.is_value():
         return ConceptVertex(vertex.as_value())
     elif vertex.is_named_role():
-        return NamedRoleVertex(vertex.as_named_role_get_variable(), vertex.as_named_role_get_name())
+        return NamedRoleVertex(vertex.as_named_role().variable(), vertex.as_named_role().name())
     else:
         return None
 
@@ -168,14 +185,16 @@ class DataConstraint(ABC):
             name = fc.name()
             arguments = [resolve_constraint_vertex(pipeline, v, concept_row) for v in fc.arguments()]
             assigned = [resolve_constraint_vertex(pipeline, v, concept_row) for v in fc.assigned()]
-            return FunctionCall(constraint, answer_index, name, arguments, assigned)
+            fc_vertex = FunctionCallVertex(name, assigned, arguments)
+            return FunctionCall(constraint, answer_index, fc_vertex, arguments, assigned)
 
         elif constraint.is_expression():
             expr = constraint.as_expression()
             text = expr.text()
             arguments = [resolve_constraint_vertex(pipeline, v, concept_row) for v in expr.arguments()]
             assigned = resolve_constraint_vertex(pipeline, expr.assigned(), concept_row)
-            return Expression(constraint, answer_index, text, arguments, assigned)
+            expr_vertex = ExpressionVertex(text, assigned, arguments)
+            return Expression(constraint, answer_index, expr_vertex, arguments, assigned)
 
         elif constraint.is_is():
             isc = constraint.as_is()
