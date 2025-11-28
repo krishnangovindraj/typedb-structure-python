@@ -11,7 +11,7 @@ DB_NAME = "typedb-graph-tutorial-py"
 
 
 def setup(driver, schema, data):
-    if next(db for db in driver.databases.all() if db.name == DB_NAME):
+    if DB_NAME in list(db.name for db in driver.databases.all()):
         driver.databases.get(DB_NAME).delete()
     driver.databases.create(DB_NAME)
     with driver.transaction(DB_NAME, TransactionType.SCHEMA) as tx:

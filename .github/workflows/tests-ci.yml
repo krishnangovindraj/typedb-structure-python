@@ -1,0 +1,62 @@
+name: Graph visualizer python CI
+
+on:
+  push:
+    paths:
+      - 'typedb_graph_visualizer/**'
+      - 'tests/**'
+      - '.github/workflows/python-ci.yml'
+  pull_request:
+    paths:
+      - 'typedb_graph_visualizer/**'
+      - 'tests/**'
+      - '.github/workflows/python-ci.yml'
+
+jobs:
+  run-tests:
+    name: Run python tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        backend:
+          - python
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup TypeDB
+        uses: typedb/setup-typedb@1.0.0
+        with:
+          typedb_version: 3.7.0-rc0
+          typedb_args: "--development-mode.enabled=true"
+
+      - name: Set up Python (Python only)
+        if: matrix.backend == 'python'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies (Python)
+        if: matrix.backend == 'python'
+        working-directory: ${{ matrix.working-directory }}
+        run: |
+          python -m pip install --upgrade pip
+          pip3 install .
+          pip3 install .[dev]
+
+      # Run the API tests against the running backend
+      - name: Run API tests
+        working-directory: ${{ github.workspace }}
+        env:
+          TYPEDB_DATABASE: ${{ matrix.backend }}
+        run: |
+            pytest
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports-${{ matrix.backend }}
+          path: |
+            **/test-report-${{ matrix.backend }}.html
+            **/application-${{ matrix.backend }}.log
