@@ -6,11 +6,13 @@ on:
       - 'typedb_graph_visualizer/**'
       - 'tests/**'
       - '.github/workflows/python-ci.yml'
+      - 'pyproject.toml'
   pull_request:
     paths:
       - 'typedb_graph_visualizer/**'
       - 'tests/**'
       - '.github/workflows/python-ci.yml'
+      - 'pyproject.toml'
 
 jobs:
   run-tests:

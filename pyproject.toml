@@ -22,7 +22,7 @@ classifiers = [
     "Topic :: Database",
 ]
 dependencies = [
-    "typedb-driver~=3.7.0-rc3",
+    "typedb-driver~=3.7.0-rc4",
     "networkx~=3.2.1",
     "matplotlib~=3.9.4",
 ]
