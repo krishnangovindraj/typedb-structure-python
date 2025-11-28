@@ -55,10 +55,3 @@ jobs:
           TYPEDB_DATABASE: ${{ matrix.backend }}
         run: |
             pytest
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-reports-${{ matrix.backend }}
-          path: |
-            **/test-report-${{ matrix.backend }}.html
-            **/application-${{ matrix.backend }}.log
